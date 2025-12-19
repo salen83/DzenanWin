@@ -9,10 +9,9 @@ then
     npm install -g @ionic/cli
 fi
 
-# Inicijalizacija praznog Ionic/React projekta (ako folder src ne postoji)
-if [ ! -d "src" ]; then
-    ionic start . blank --type=react --no-deps --confirm
-fi
+# Inicijalizacija praznog Ionic/React projekta u root repo-u
+# --force omogućava prepisivanje postojećih fajlova
+ionic start . blank --type=react --no-deps --confirm --force
 
 echo "=== Instalacija paketa ==="
 npm install @ionic/react @ionic/react-router ionicons react-router react-router-dom @capacitor/core @capacitor/cli cordova-sqlite-storage
@@ -20,14 +19,47 @@ npm install @ionic/react @ionic/react-router ionicons react-router react-router-
 # Kreiranje foldera za screenove
 mkdir -p src/screens
 
-# Kreiranje praznih Screen fajlova
+# Kreiranje praznih Screen fajlova sa infinite scroll scaffoldom
 for i in {1..5}
 do
 cat <<EOL > src/screens/Screen$i.tsx
-import React from 'react';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/react';
+import React, { useState } from 'react';
+import {
+  IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
+  IonList, IonItem, IonLabel, IonInfiniteScroll, IonInfiniteScrollContent
+} from '@ionic/react';
+
+/* Placeholder podaci za infinite scroll */
+const initialData = Array.from({length: 20}, (_, idx) => ({
+  id: idx + 1,
+  col1: 'Vrednost1',
+  col2: 'Vrednost2',
+  col3: 'Vrednost3'
+}));
 
 const Screen$i: React.FC = () => {
+  const [items, setItems] = useState(initialData);
+  const [disableInfiniteScroll, setDisableInfiniteScroll] = useState(false);
+
+  const loadData = (ev: CustomEvent<void>) => {
+    setTimeout(() => {
+      const newItems = Array.from({length: 20}, (_, idx) => ({
+        id: items.length + idx + 1,
+        col1: 'Vrednost1',
+        col2: 'Vrednost2',
+        col3: 'Vrednost3'
+      }));
+      setItems([...items, ...newItems]);
+
+      // Ako smo došli do 100 elemenata, isključujemo infinite scroll
+      if (items.length + newItems.length >= 100) {
+        setDisableInfiniteScroll(true);
+      }
+
+      (ev.target as HTMLIonInfiniteScrollElement).complete();
+    }, 500);
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -36,7 +68,20 @@ const Screen$i: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <p>Ovde ide tabela i logika za Screen $i</p>
+        <IonList>
+          {items.map(item => (
+            <IonItem key={item.id}>
+              <IonLabel>{item.col1} | {item.col2} | {item.col3}</IonLabel>
+            </IonItem>
+          ))}
+        </IonList>
+        <IonInfiniteScroll
+          threshold="100px"
+          disabled={disableInfiniteScroll}
+          onIonInfinite={loadData}
+        >
+          <IonInfiniteScrollContent loadingText="Učitavanje..."></IonInfiniteScrollContent>
+        </IonInfiniteScroll>
       </IonContent>
     </IonPage>
   );
@@ -89,11 +134,10 @@ const App: React.FC = () => (
 export default App;
 EOL
 
-echo "=== Kreiranje placeholder SQLite i infinite scroll scaffold ==="
-
+echo "=== Kreiranje placeholder SQLite servisa ==="
 mkdir -p src/services
 cat <<EOL > src/services/db.ts
-// Ovde ide SQLite inicijalizacija i funkcije za čuvanje podataka
+// Placeholder SQLite servis
 export const initDB = async () => {
   console.log("SQLite scaffold inicijalizovan");
 };
