@@ -12,9 +12,7 @@ export default function Screen2() {
       const home = row.home;
       const away = row.away;
       const fullScore = row.full;
-
       if (!home || !away || !fullScore) return;
-
       const goals = fullScore.split(":").map(x => parseInt(x, 10));
       if (goals.length !== 2) return;
 
@@ -24,23 +22,17 @@ export default function Screen2() {
         }
       });
 
-      // update stats
       teamsMap[home].total += 1;
       teamsMap[away].total += 1;
 
-      // GG: oba tima daju gol
       if (goals[0] > 0 && goals[1] > 0) {
         teamsMap[home].gg += 1;
         teamsMap[away].gg += 1;
       }
-
-      // NG: bar jedan tim ne daje gol
       if (goals[0] === 0 || goals[1] === 0) {
         teamsMap[home].ng += 1;
         teamsMap[away].ng += 1;
       }
-
-      // 2+: ukupno golova 2 ili više
       if (goals[0] + goals[1] >= 2) {
         teamsMap[home].over2 += 1;
         teamsMap[away].over2 += 1;

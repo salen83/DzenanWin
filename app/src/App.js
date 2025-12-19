@@ -1,36 +1,35 @@
-import React from "react";
+import React, { useState } from "react";
 import "./App.css";
+
 import Screen1 from "./Screen1";
 import Screen2 from "./Screen2";
-import { MatchesProvider } from "./MatchesContext";
-
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Screen3 from "./Screen3";
+import { MatchesContext } from "./MatchesContext";
 
 export default function App() {
+  const [currentScreen, setCurrentScreen] = useState("screen1");
+  const [rows, setRows] = useState([]);
+
   return (
-    <MatchesProvider>
-      <Router>
-        <div className="container">
-          <h1>Fudbalska aplikacija</h1>
-          <div className="nav-buttons">
-            <Link to="/screen1"><button>Završeni mečevi</button></Link>
-            <Link to="/screen2"><button>Statistika</button></Link>
-            <Link to="/screen3"><button>Screen 3</button></Link>
-            <Link to="/screen4"><button>Screen 4</button></Link>
-            <Link to="/screen5"><button>Screen 5</button></Link>
-            <Link to="/screen6"><button>Screen 6</button></Link>
-            <Link to="/screen7"><button>Screen 7</button></Link>
-            <Link to="/screen8"><button>Screen 8</button></Link>
-            <Link to="/screen9"><button>Screen 9</button></Link>
-            <Link to="/screen10"><button>Screen 10</button></Link>
-          </div>
-          <Routes>
-            <Route path="/screen1" element={<Screen1 />} />
-            <Route path="/screen2" element={<Screen2 />} />
-            {/* Ostali screenovi */}
-          </Routes>
+    <MatchesContext.Provider value={{ rows, setRows }}>
+      <div className="container">
+        <div style={{ marginBottom: "20px" }}>
+          <button onClick={() => setCurrentScreen("screen1")}>Završeni mečevi</button>
+          <button onClick={() => setCurrentScreen("screen2")}>Statistika</button>
+          <button onClick={() => setCurrentScreen("screen3")}>Mozzart ponuda</button>
+          <button onClick={() => setCurrentScreen("screen4")}>Screen 4</button>
+          <button onClick={() => setCurrentScreen("screen5")}>Screen 5</button>
+          <button onClick={() => setCurrentScreen("screen6")}>Screen 6</button>
+          <button onClick={() => setCurrentScreen("screen7")}>Screen 7</button>
+          <button onClick={() => setCurrentScreen("screen8")}>Screen 8</button>
+          <button onClick={() => setCurrentScreen("screen9")}>Screen 9</button>
+          <button onClick={() => setCurrentScreen("screen10")}>Screen 10</button>
         </div>
-      </Router>
-    </MatchesProvider>
+
+        {currentScreen === "screen1" && <Screen1 />}
+        {currentScreen === "screen2" && <Screen2 />}
+        {currentScreen === "screen3" && <Screen3 />}
+      </div>
+    </MatchesContext.Provider>
   );
 }
