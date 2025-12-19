@@ -1,115 +1,36 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import "./App.css";
+import Screen1 from "./Screen1";
+import Screen2 from "./Screen2";
+import { MatchesProvider } from "./MatchesContext";
 
-const columns = ["time", "home", "away", "full", "ht", "sh"];
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 export default function App() {
-  const [rows, setRows] = useState([]);
-  const pasteRef = useRef(null);
-  const pastePosition = useRef({ row: 0, col: 0 });
-
-  useEffect(() => {
-    const saved = localStorage.getItem("matches");
-    if (saved) setRows(JSON.parse(saved));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("matches", JSON.stringify(rows));
-  }, [rows]);
-
-  const emptyRow = () => ({
-    time: "", home: "", away: "", full: "", ht: "", sh: ""
-  });
-
-  const focusPaste = (r, c) => {
-    pastePosition.current = { row: r, col: c };
-    pasteRef.current.focus();
-  };
-
-  const handlePaste = e => {
-    const text = e.target.value;
-    if (!text) return;
-
-    const lines = text.trim().split(/\r?\n/);
-    const newRows = [...rows];
-    const { row, col } = pastePosition.current;
-
-    lines.forEach((line, i) => {
-      const values = line.split("\t");
-      const rIndex = row + i;
-
-      if (!newRows[rIndex]) newRows[rIndex] = emptyRow();
-
-      values.forEach((val, j) => {
-        const key = columns[col + j];
-        if (key) newRows[rIndex][key] = val;
-      });
-    });
-
-    setRows(newRows);
-    e.target.value = "";
-  };
-
-  const updateCell = (r, key, val) => {
-    const copy = [...rows];
-    copy[r][key] = val;
-    setRows(copy);
-  };
-
-  const deleteRow = r => {
-    const copy = [...rows];
-    copy.splice(r, 1);
-    setRows(copy);
-  };
-
   return (
-    <div className="container">
-      <h1>Završeni mečevi</h1>
-      <button onClick={() => setRows([...rows, emptyRow()])}>Dodaj red</button>
-
-      {/* ANDROID PASTE INPUT */}
-      <textarea
-        ref={pasteRef}
-        onChange={handlePaste}
-        style={{
-          position: "absolute",
-          opacity: 0,
-          height: 0,
-          width: 0
-        }}
-      />
-
-      <table>
-        <thead>
-          <tr>
-            <th>Vreme</th>
-            <th>Domaćin</th>
-            <th>Gost</th>
-            <th>Ukupan</th>
-            <th>HT</th>
-            <th>SH</th>
-            <th>Akcija</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, r) => (
-            <tr key={r}>
-              {columns.map((col, c) => (
-                <td key={c}>
-                  <input
-                    value={row[col]}
-                    onChange={e => updateCell(r, col, e.target.value)}
-                    onFocus={() => focusPaste(r, c)}
-                  />
-                </td>
-              ))}
-              <td>
-                <button onClick={() => deleteRow(r)}>Obriši</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <MatchesProvider>
+      <Router>
+        <div className="container">
+          <h1>Fudbalska aplikacija</h1>
+          <div className="nav-buttons">
+            <Link to="/screen1"><button>Završeni mečevi</button></Link>
+            <Link to="/screen2"><button>Statistika</button></Link>
+            <Link to="/screen3"><button>Screen 3</button></Link>
+            <Link to="/screen4"><button>Screen 4</button></Link>
+            <Link to="/screen5"><button>Screen 5</button></Link>
+            <Link to="/screen6"><button>Screen 6</button></Link>
+            <Link to="/screen7"><button>Screen 7</button></Link>
+            <Link to="/screen8"><button>Screen 8</button></Link>
+            <Link to="/screen9"><button>Screen 9</button></Link>
+            <Link to="/screen10"><button>Screen 10</button></Link>
+          </div>
+          <Routes>
+            <Route path="/screen1" element={<Screen1 />} />
+            <Route path="/screen2" element={<Screen2 />} />
+            {/* Ostali screenovi */}
+          </Routes>
+        </div>
+      </Router>
+    </MatchesProvider>
   );
 }
