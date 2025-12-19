@@ -16,21 +16,25 @@ jobs:
         with:
           node-version: '20'
 
-      # 1️⃣ Pokreni setup skriptu da kreira package.json i projekat
+      # Pokreni setup skriptu koja kreira app folder i screenove
       - name: Run setup script
         run: bash setup_app.sh
 
-      # 2️⃣ Instaliraj npm dependencies
+      # Instaliraj npm dependencies unutar app/ foldera
       - name: Install npm dependencies
-        run: npm install
+        run: |
+          cd app
+          npm install
 
-      # 3️⃣ Build Ionic aplikacije
+      # Build Ionic aplikacije unutar app/ foldera
       - name: Build Ionic App
-        run: npm run build
+        run: |
+          cd app
+          npm run build
 
-      # 4️⃣ Upload build artifacts
+      # Upload build artifacts iz app/build/
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: build/
+          path: app/build/
