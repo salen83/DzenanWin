@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Kreiranje Ionic/React aplikacije ==="
+echo "=== Kreiranje Ionic/React aplikacije u folderu app/ ==="
 
 # Instalacija Ionic CLI ako nije instaliran
 if ! command -v ionic &> /dev/null
@@ -9,9 +9,10 @@ then
     npm install -g @ionic/cli
 fi
 
-# Inicijalizacija praznog Ionic/React projekta u root repo-u
-# --force omogućava prepisivanje postojećih fajlova
-ionic start . blank --type=react --no-deps --confirm --force
+# Kreiranje praznog Ionic/React projekta u podfolderu app/
+ionic start app blank --type=react --no-deps --confirm
+
+cd app
 
 echo "=== Instalacija paketa ==="
 npm install @ionic/react @ionic/react-router ionicons react-router react-router-dom @capacitor/core @capacitor/cli cordova-sqlite-storage
@@ -50,12 +51,7 @@ const Screen$i: React.FC = () => {
         col3: 'Vrednost3'
       }));
       setItems([...items, ...newItems]);
-
-      // Ako smo došli do 100 elemenata, isključujemo infinite scroll
-      if (items.length + newItems.length >= 100) {
-        setDisableInfiniteScroll(true);
-      }
-
+      if (items.length + newItems.length >= 100) setDisableInfiniteScroll(true);
       (ev.target as HTMLIonInfiniteScrollElement).complete();
     }, 500);
   };
@@ -104,7 +100,7 @@ import Screen3 from './screens/Screen3';
 import Screen4 from './screens/Screen4';
 import Screen5 from './screens/Screen5';
 
-/* Core CSS required for Ionic components to work properly */
+/* Core CSS required for Ionic components */
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
