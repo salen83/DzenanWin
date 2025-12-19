@@ -24,10 +24,22 @@ jobs:
           cd app
           npm install
 
+      - name: Debug: list app folder before build
+        run: |
+          cd app
+          echo "Sadržaj app pre build-a:"
+          ls -la
+
       - name: Build Ionic App
         run: |
           cd app
           npm run build
+
+      - name: Debug: list build folder
+        run: |
+          cd app
+          echo "Sadržaj build foldera:"
+          ls -la build
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
