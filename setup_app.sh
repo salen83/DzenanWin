@@ -10,6 +10,7 @@ then
 fi
 
 # Kreiranje praznog Ionic/React projekta u podfolderu app/
+# --confirm automatski potvrđuje pitanja
 ionic start app blank --type=react --no-deps --confirm
 
 cd app
