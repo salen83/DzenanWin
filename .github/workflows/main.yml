@@ -9,32 +9,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repo
       - uses: actions/checkout@v3
 
-      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # Pokreni setup skriptu koja kreira app/ folder i Ionic projekat
       - name: Run setup script
         run: bash setup_app.sh
 
-      # Instaliraj npm dependency-je unutar app/
       - name: Install npm dependencies
         run: |
           cd app
           npm install
 
-      # Build aplikacije
       - name: Build Ionic App
         run: |
           cd app
           npm run build
 
-      # Upload build artifact
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
