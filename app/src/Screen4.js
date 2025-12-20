@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import { MatchesContext } from "./MatchesContext";
-import Screen2 from "./Screen2";
 
 export default function Screen4() {
   const { futureMatches, rows } = useContext(MatchesContext); // rows = zavrseni mecevi (Screen1)

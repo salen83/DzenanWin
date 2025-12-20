@@ -29,7 +29,7 @@ export default function Screen1() {
       const isEmpty = columns.every(col => !last[col]);
       if (!isEmpty) setRows([...rows, emptyRow()]);
     }
-  }, []);
+  }, [rows, setRows]);
 
   /* SCROLL DO DNA */
   useEffect(() => {
