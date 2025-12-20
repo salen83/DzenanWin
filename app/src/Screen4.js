@@ -1,32 +1,77 @@
 import React, { useContext, useEffect, useState } from "react";
-import { MatchesContext } from "./MatchesContext"; // koristi isti context kao Screen3
+import { MatchesContext } from "./MatchesContext";
+import Screen2 from "./Screen2";
 
 export default function Screen4() {
-  const { futureMatches } = useContext(MatchesContext); // futureMatches = mečevi iz Screen3
+  const { futureMatches, rows } = useContext(MatchesContext); // rows = zavrseni mecevi (Screen1)
   const [predictions, setPredictions] = useState([]);
 
   useEffect(() => {
-    if (!futureMatches) return;
+    if (!futureMatches || futureMatches.length === 0) {
+      setPredictions([]);
+      return;
+    }
 
-    const calcPredictions = futureMatches.map(match => {
-      // Ovde ide logika prve, najlakše metode predikcije GG/NG/2+
-      // Primer: GG = 50%, NG = 50%, 2+ = 60%
+    // Kreiramo mapu statistike timova iz Screen2
+    const teamsStats = {};
+    rows.forEach(row => {
+      const home = row.home;
+      const away = row.away;
+      const full = row.full;
+      if (!home || !away || !full) return;
+      const goals = full.split(":").map(x => parseInt(x, 10));
+      if (goals.length !== 2) return;
+
+      [home, away].forEach(team => {
+        if (!teamsStats[team]) {
+          teamsStats[team] = { total: 0, gg: 0, ng: 0, over2: 0 };
+        }
+      });
+
+      teamsStats[home].total += 1;
+      teamsStats[away].total += 1;
+
+      // GG: oba tima daju gol
+      if (goals[0] > 0 && goals[1] > 0) {
+        teamsStats[home].gg += 1;
+        teamsStats[away].gg += 1;
+      }
+
+      // NG: bar jedan tim ne daje gol
+      if (goals[0] === 0 || goals[1] === 0) {
+        teamsStats[home].ng += 1;
+        teamsStats[away].ng += 1;
+      }
+
+      // 2+: ukupno golova >= 2
+      if (goals[0] + goals[1] >= 2) {
+        teamsStats[home].over2 += 1;
+        teamsStats[away].over2 += 1;
+      }
+    });
+
+    const preds = futureMatches.map(match => {
+      const homeStats = teamsStats[match.home] || { total: 0, gg: 0, ng: 0, over2: 0 };
+      const awayStats = teamsStats[match.away] || { total: 0, gg: 0, ng: 0, over2: 0 };
+
+      const totalMatches = homeStats.total + awayStats.total || 1; // izbegavamo deljenje nulom
+
       return {
         time: match.time,
         home: match.home,
         away: match.away,
-        gg: 50,   // procenat
-        ng: 50,
-        over2: 60
+        gg: Math.round((homeStats.gg + awayStats.gg) / totalMatches * 100),
+        ng: Math.round((homeStats.ng + awayStats.ng) / totalMatches * 100),
+        over2: Math.round((homeStats.over2 + awayStats.over2) / totalMatches * 100)
       };
     });
 
-    setPredictions(calcPredictions);
-  }, [futureMatches]);
+    setPredictions(preds);
+  }, [futureMatches, rows]);
 
   return (
     <div className="container">
-      <h1>Predviđanja (Metoda 1)</h1>
+      <h1>Predikcije (Metoda 1)</h1>
       <table>
         <thead>
           <tr>
@@ -39,14 +84,14 @@ export default function Screen4() {
           </tr>
         </thead>
         <tbody>
-          {predictions.map((row, idx) => (
-            <tr key={idx}>
-              <td>{row.time}</td>
-              <td>{row.home}</td>
-              <td>{row.away}</td>
-              <td>{row.gg}%</td>
-              <td>{row.ng}%</td>
-              <td>{row.over2}%</td>
+          {predictions.map((m, i) => (
+            <tr key={i}>
+              <td>{m.time}</td>
+              <td>{m.home}</td>
+              <td>{m.away}</td>
+              <td>{m.gg}%</td>
+              <td>{m.ng}%</td>
+              <td>{m.over2}%</td>
             </tr>
           ))}
         </tbody>
