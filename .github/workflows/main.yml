@@ -9,6 +9,7 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -23,12 +24,16 @@ jobs:
         run: npm install
 
       - name: Install Capacitor CLI
-        working-directory: app
-        run: npm install @capacitor/cli -g
+        run: npm install -g @capacitor/cli
 
       - name: Add Android platform
         working-directory: app
-        run: npx cap add android || echo "Android already added"
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          else
+            echo "Android platform already exists"
+          fi
 
       - name: Sync Capacitor
         working-directory: app
@@ -46,7 +51,7 @@ jobs:
           ./gradlew assembleDebug
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: app-debug.apk
           path: app/android/app/build/outputs/apk/debug/app-debug.apk
