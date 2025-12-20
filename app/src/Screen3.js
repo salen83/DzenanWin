@@ -1,12 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useRef, useContext } from "react";
+import { MatchesContext } from "./MatchesContext";
 
 const columns = ["time", "home", "away"];
 
 export default function Screen3() {
-  const [rows, setRows] = useState(() => {
-    const saved = localStorage.getItem("futureMatches");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { futureMatches, setFutureMatches } = useContext(MatchesContext);
 
   const pasteRef = useRef(null);
   const pastePosition = useRef({ row: 0, col: 0 });
@@ -23,12 +21,13 @@ export default function Screen3() {
     if (!text) return;
 
     const lines = text.trim().split(/\r?\n/);
-    const newRows = [...rows];
+    const newRows = [...futureMatches];
     const { row, col } = pastePosition.current;
 
     lines.forEach((line, i) => {
       const values = line.split("\t");
       const rIndex = row + i;
+
       if (!newRows[rIndex]) newRows[rIndex] = emptyRow();
 
       values.forEach((val, j) => {
@@ -37,37 +36,30 @@ export default function Screen3() {
       });
     });
 
-    setRows(newRows);
+    setFutureMatches(newRows);
     e.target.value = "";
   };
 
-  const addRow = () => setRows([...rows, emptyRow()]);
-
-  const updateCell = (index, key, value) => {
-    const copy = [...rows];
-    copy[index][key] = value;
-    setRows(copy);
+  const updateCell = (r, key, val) => {
+    const copy = [...futureMatches];
+    copy[r][key] = val;
+    setFutureMatches(copy);
   };
 
-  const deleteRow = index => {
-    const copy = [...rows];
-    copy.splice(index, 1);
-    setRows(copy);
+  const deleteRow = r => {
+    const copy = [...futureMatches];
+    copy.splice(r, 1);
+    setFutureMatches(copy);
   };
-
-  const deleteAll = () => setRows([]);
-
-  React.useEffect(() => {
-    localStorage.setItem("futureMatches", JSON.stringify(rows));
-  }, [rows]);
 
   return (
     <div className="container">
       <h1>Mozzart ponuda</h1>
-      <button onClick={addRow}>Dodaj red</button>
-      <button onClick={deleteAll} style={{ marginLeft: "10px" }}>Obriši sve</button>
 
-      {/* ANDROID PASTE INPUT */}
+      <button onClick={() => setFutureMatches([...futureMatches, emptyRow()])}>
+        Dodaj red
+      </button>
+
       <textarea
         ref={pasteRef}
         onChange={handlePaste}
@@ -84,7 +76,7 @@ export default function Screen3() {
           </tr>
         </thead>
         <tbody>
-          {(rows || []).map((row, r) => (
+          {futureMatches.map((row, r) => (
             <tr key={r}>
               {columns.map((col, c) => (
                 <td key={c}>

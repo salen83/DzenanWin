@@ -3,32 +3,35 @@ import React, { createContext, useState, useEffect } from "react";
 export const MatchesContext = createContext();
 
 export function MatchesProvider({ children }) {
-  // SCREEN1 - zavrseni mecevi
-  const [rows, setRows] = useState([]);
+  // SCREEN 1
+  const [rows, setRows] = useState(() => {
+    const saved = localStorage.getItem("finishedMatches");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
-    const saved = localStorage.getItem("matches");
-    if (saved) setRows(JSON.parse(saved));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("matches", JSON.stringify(rows));
+    localStorage.setItem("finishedMatches", JSON.stringify(rows));
   }, [rows]);
 
-  // SCREEN3 - budući mečevi
-  const [futureRows, setFutureRows] = useState([]);
-
-  useEffect(() => {
+  // SCREEN 3 (BUDUĆI MEČEVI)
+  const [futureMatches, setFutureMatches] = useState(() => {
     const saved = localStorage.getItem("futureMatches");
-    if (saved) setFutureRows(JSON.parse(saved));
-  }, []);
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
-    localStorage.setItem("futureMatches", JSON.stringify(futureRows));
-  }, [futureRows]);
+    localStorage.setItem("futureMatches", JSON.stringify(futureMatches));
+  }, [futureMatches]);
 
   return (
-    <MatchesContext.Provider value={{ rows, setRows, futureRows, setFutureRows }}>
+    <MatchesContext.Provider
+      value={{
+        rows,
+        setRows,
+        futureMatches,
+        setFutureMatches
+      }}
+    >
       {children}
     </MatchesContext.Provider>
   );
