@@ -1,7 +1,8 @@
 import React, { useRef, useContext, useEffect } from "react";
 import { MatchesContext } from "./MatchesContext";
 
-const columns = ["time", "home", "away", "full", "ht", "sh"];
+/* DODATA KOLONA: date */
+const columns = ["date", "time", "home", "away", "full", "ht", "sh"];
 
 export default function Screen1() {
   const { rows, setRows } = useContext(MatchesContext);
@@ -10,7 +11,13 @@ export default function Screen1() {
   const bottomRef = useRef(null);
 
   const emptyRow = () => ({
-    time: "", home: "", away: "", full: "", ht: "", sh: ""
+    date: "",
+    time: "",
+    home: "",
+    away: "",
+    full: "",
+    ht: "",
+    sh: ""
   });
 
   /* AUTOMATSKI PRAZAN RED */
@@ -24,7 +31,7 @@ export default function Screen1() {
     }
   }, []);
 
-  /* SCROLL DO DNA PRI SVAKOJ PROMENI REDOVA */
+  /* SCROLL DO DNA */
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -85,6 +92,7 @@ export default function Screen1() {
       <table>
         <thead>
           <tr>
+            <th>Datum</th>
             <th>Vreme</th>
             <th>Domaćin</th>
             <th>Gost</th>
