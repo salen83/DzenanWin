@@ -23,13 +23,27 @@ jobs:
         working-directory: app
         run: npm install
 
+      - name: Build React app
+        working-directory: app
+        run: npm run build
+
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
+
+      - name: Initialize Capacitor (if missing)
+        working-directory: app
+        run: |
+          if [ ! -f "capacitor.config.ts" ]; then
+            npx cap init "DzenanWin" "com.salen.dzenanwin"
+          else
+            echo "Capacitor already initialized"
+          fi
 
       - name: Add Android platform
         working-directory: app
         run: |
           if [ ! -d "android" ]; then
+            npm install @capacitor/android
             npx cap add android
           else
             echo "Android platform already exists"
@@ -38,10 +52,6 @@ jobs:
       - name: Sync Capacitor
         working-directory: app
         run: npx cap sync android
-
-      - name: Build React app
-        working-directory: app
-        run: npm run build
 
       - name: Build Android APK
         working-directory: app
