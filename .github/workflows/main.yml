@@ -32,7 +32,7 @@ jobs:
           ${{ runner.os }}-node-
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
 
     - name: Build web assets
       run: npm run build
@@ -52,7 +52,7 @@ jobs:
       run: npm install @capacitor/android@latest
 
     - name: Capacitor Sync
-      run: npx cap sync android
+      run: npx --ignore-existing cap sync android
 
     - name: Build Android Debug APK
-      run: npx cap copy android && cd android && ./gradlew assembleDebug
+      run: npx --ignore-existing cap copy android && cd android && ./gradlew assembleDebug
