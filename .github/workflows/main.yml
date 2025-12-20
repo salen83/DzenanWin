@@ -19,40 +19,37 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        working-directory: app
-        run: npm install
-
-      - name: Install Capacitor CLI
-        run: npm install -g @capacitor/cli
-
-      - name: Install @capacitor/android
-        working-directory: app
-        run: npm install @capacitor/android
-
-      - name: Build React app
-        working-directory: app
-        run: npm run build
-
-      - name: Add Android platform
-        working-directory: app
-        run: |
-          if [ ! -d "android" ]; then
-            npx cap add android
-          else
-            echo "Android platform already exists"
-          fi
-
-      - name: Sync Capacitor
-        working-directory: app
-        run: npx cap sync android
-
       - name: Setup JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
+
+      - name: Install project dependencies
+        working-directory: app
+        run: npm install
+
+      - name: Install Capacitor CLI globally
+        run: npm install -g @capacitor/cli
+
+      - name: Add Android platform if missing
+        working-directory: app
+        run: |
+          if [ ! -d "android" ]; then
+            npm install @capacitor/android
+            npx cap add android
+          else
+            echo "Android platform already exists"
+          fi
+
+      - name: Build React web assets
+        working-directory: app
+        run: npm run build
+
+      - name: Sync Capacitor
+        working-directory: app
+        run: npx cap sync android
 
       - name: Build Android APK
         working-directory: app
