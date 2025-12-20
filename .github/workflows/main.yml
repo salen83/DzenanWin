@@ -23,14 +23,18 @@ jobs:
         working-directory: app
         run: npm install
 
+      - name: Install Capacitor CLI
+        run: npm install -g @capacitor/cli
+
+      - name: Install @capacitor/android
+        working-directory: app
+        run: npm install @capacitor/android
+
       - name: Build React app
         working-directory: app
         run: npm run build
 
-      - name: Install Capacitor CLI
-        run: npm install -g @capacitor/cli
-
-      - name: Add Android platform if missing
+      - name: Add Android platform
         working-directory: app
         run: |
           if [ ! -d "android" ]; then
@@ -43,7 +47,7 @@ jobs:
         working-directory: app
         run: npx cap sync android
 
-      - name: Copy and Build Android APK
+      - name: Build Android APK
         working-directory: app
         run: |
           npx cap copy android
