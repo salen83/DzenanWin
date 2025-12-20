@@ -24,17 +24,19 @@ jobs:
       - name: Install Capacitor CLI
         run: npm install @capacitor/cli -g
 
-      - name: Add Android platform
-        run: npx cap add android || echo "Android already added"
-
-      - name: Sync Capacitor
-        run: npx cap sync android
+      - name: Ensure Android platform exists
+        run: |
+          npx cap add android || echo "Android already added"
+          npx cap sync android
 
       - name: Build React app
         run: npm run build
 
-      - name: Build Android APK
-        run: npx cap copy android && cd android && ./gradlew assembleDebug
+      - name: Copy and build Android app
+        run: |
+          npx cap copy android
+          cd android
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
