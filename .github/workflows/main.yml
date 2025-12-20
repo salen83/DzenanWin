@@ -23,34 +23,28 @@ jobs:
         working-directory: app
         run: npm install
 
-      - name: Build React app
-        working-directory: app
-        run: npm run build
+      - name: Setup JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
 
-      - name: Initialize Capacitor if missing
-        working-directory: app
-        run: |
-          if [ ! -f "capacitor.config.ts" ]; then
-            npx cap init "DzenanWin" "com.salen.dzenanwin"
-          else
-            echo "Capacitor already initialized"
-          fi
-
-      - name: Install Android platform
-        working-directory: app
-        run: npm install @capacitor/android
-
       - name: Add Android platform
         working-directory: app
         run: |
+          npm install @capacitor/android
           if [ ! -d "android" ]; then
             npx cap add android
           else
             echo "Android platform already exists"
           fi
+
+      - name: Build React app
+        working-directory: app
+        run: npm run build
 
       - name: Sync Capacitor
         working-directory: app
