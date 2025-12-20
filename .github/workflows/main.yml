@@ -30,7 +30,7 @@ jobs:
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
 
-      - name: Initialize Capacitor (if missing)
+      - name: Initialize Capacitor if missing
         working-directory: app
         run: |
           if [ ! -f "capacitor.config.ts" ]; then
@@ -39,11 +39,14 @@ jobs:
             echo "Capacitor already initialized"
           fi
 
+      - name: Install Android platform
+        working-directory: app
+        run: npm install @capacitor/android
+
       - name: Add Android platform
         working-directory: app
         run: |
           if [ ! -d "android" ]; then
-            npm install @capacitor/android
             npx cap add android
           else
             echo "Android platform already exists"
