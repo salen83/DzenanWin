@@ -1,4 +1,4 @@
-import React, { useRef, useContext } from "react";
+import React, { useRef, useContext, useEffect } from "react";
 import { MatchesContext } from "./MatchesContext";
 
 const columns = ["time", "home", "away", "full", "ht", "sh"];
@@ -7,8 +7,29 @@ export default function Screen1() {
   const { rows, setRows } = useContext(MatchesContext);
   const pasteRef = useRef(null);
   const pastePosition = useRef({ row: 0, col: 0 });
+  const bottomRef = useRef(null);
 
-  const emptyRow = () => ({ time: "", home: "", away: "", full: "", ht: "", sh: "" });
+  const emptyRow = () => ({
+    time: "", home: "", away: "", full: "", ht: "", sh: ""
+  });
+
+  /* AUTOMATSKI PRAZAN RED */
+  useEffect(() => {
+    if (rows.length === 0) {
+      setRows([emptyRow()]);
+    } else {
+      const last = rows[rows.length - 1];
+      const isEmpty = columns.every(col => !last[col]);
+      if (!isEmpty) setRows([...rows, emptyRow()]);
+    }
+  }, []);
+
+  /* SCROLL DO DNA PRI SVAKOJ PROMENI REDOVA */
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [rows]);
 
   const focusPaste = (r, c) => {
     pastePosition.current = { row: r, col: c };
@@ -18,6 +39,7 @@ export default function Screen1() {
   const handlePaste = e => {
     const text = e.target.value;
     if (!text) return;
+
     const lines = text.trim().split(/\r?\n/);
     const newRows = [...rows];
     const { row, col } = pastePosition.current;
@@ -25,7 +47,9 @@ export default function Screen1() {
     lines.forEach((line, i) => {
       const values = line.split("\t");
       const rIndex = row + i;
+
       if (!newRows[rIndex]) newRows[rIndex] = emptyRow();
+
       values.forEach((val, j) => {
         const key = columns[col + j];
         if (key) newRows[rIndex][key] = val;
@@ -49,14 +73,15 @@ export default function Screen1() {
   };
 
   return (
-    <div>
+    <div className="container">
       <h2>Završeni mečevi</h2>
-      <button onClick={() => setRows([...rows, emptyRow()])}>Dodaj red</button>
+
       <textarea
         ref={pasteRef}
         onChange={handlePaste}
         style={{ position: "absolute", opacity: 0, height: 0, width: 0 }}
       />
+
       <table>
         <thead>
           <tr>
@@ -81,11 +106,15 @@ export default function Screen1() {
                   />
                 </td>
               ))}
-              <td><button onClick={() => deleteRow(r)}>Obriši</button></td>
+              <td>
+                <button onClick={() => deleteRow(r)}>Obriši</button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <div ref={bottomRef} />
     </div>
   );
 }
