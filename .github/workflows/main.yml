@@ -1,12 +1,11 @@
-name: Android Debug APK
+name: Build Android APK
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
-  build-android:
+  android:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,13 +13,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
       - name: Setup Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
@@ -28,29 +27,31 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Capacitor CLI & Android
-        run: |
-          npm install @capacitor/cli @capacitor/core @capacitor/android
-
-      - name: Build web app
+      - name: Build web
         run: npm run build
 
-      - name: Add Android platform if missing
+      - name: Create capacitor.config.json
         run: |
-          if [ ! -d "android" ]; then
-            npx cap add android
-          fi
+          cat <<EOF > capacitor.config.json
+          {
+            "appId": "com.dzenan.win",
+            "appName": "DzenanWin",
+            "webDir": "build",
+            "bundledWebRuntime": false
+          }
+          EOF
 
-      - name: Sync Capacitor
+      - name: Install Capacitor
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync Android
         run: npx cap sync android
 
-      - name: Build Debug APK
+      - name: Build APK
         run: |
           cd android
           ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
