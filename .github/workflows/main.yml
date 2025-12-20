@@ -1,15 +1,17 @@
-name: Build React App
+name: Android APK Build
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-android:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -17,17 +19,27 @@ jobs:
           node-version: '20'
 
       - name: Install npm dependencies
-        run: |
-          cd app
-          npm install
+        run: npm ci
 
-      - name: Build React App
-        run: |
-          cd app
-          npm run build
+      - name: Build React app
+        run: npm run build
 
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Install Capacitor CLI
+        run: npm install @capacitor/cli -g
+
+      - name: Add Android platform
+        run: npx cap add android || echo "Android platform already exists"
+
+      - name: Copy build to Android
+        run: npx cap copy android
+
+      - name: Build Android APK
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
         with:
-          name: build
-          path: app/build/
+          name: app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
