@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build APK
 
 on:
   push:
@@ -13,38 +13,54 @@ jobs:
     env:
       JAVA_HOME: /usr/lib/jvm/java-17-temurin
       ANDROID_HOME: $HOME/Android/Sdk
-      PATH: $HOME/Android/Sdk/cmdline-tools/latest/bin:$HOME/Android/Sdk/platform-tools:$PATH
+      PATH: $HOME/Android/Sdk/cmdline-tools/latest/bin:$HOME/Android/Sdk/platform-tools:$PATH:$JAVA_HOME/bin:$PATH
 
     steps:
+      # 1. Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 2. Instaliraj tar da ne padne checkout
+      - name: Install tar
+        run: sudo apt-get update && sudo apt-get install -y tar unzip curl
+
+      # 3. Instaliraj Node.js 24 (novi)
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 24
+          node-version: '24'
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build web assets
-        run: npm run build
-
-      - name: Add Android SDK components
+      # 4. Instaliraj dependencies i regeneriši package-lock.json
+      - name: Install NPM packages
         run: |
-          yes | sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-          yes | sdkmanager --licenses
+          npm install
 
-      - name: Sync Capacitor
+      # 5. Dodaj Android SDK ako ga nema
+      - name: Install Android SDK
+        run: |
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          cd $ANDROID_HOME/cmdline-tools
+          curl -sSL https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip -o cmdline-tools.zip
+          unzip cmdline-tools.zip
+          mv cmdline-tools latest
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.3"
+
+      # 6. Sync Capacitor Android
+      - name: Capacitor sync Android
         run: npx cap sync android
 
+      # 7. Build APK
       - name: Build Android APK
-        run: ./android/gradlew assembleDebug
+        run: |
+          cd android
+          ./gradlew assembleDebug
 
+      # 8. Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: DzenanWin-debug.apk
+          name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
