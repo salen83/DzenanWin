@@ -3,6 +3,7 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,12 +13,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Set up Java 17
+      - name: Set up Java 17 (OBAVEZNO)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -26,20 +27,26 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build web
+      - name: Build web assets
         run: npm run build
 
-      - name: Install Capacitor Android
-        run: npm install @capacitor/android @capacitor/cli
+      - name: Install Capacitor CLI
+        run: npm install @capacitor/cli @capacitor/android
 
-      - name: Capacitor sync
-        run: npx cap sync android
-
-      - name: FORCE JAVA 17 FOR GRADLE
+      - name: Initialize Capacitor (if needed)
         run: |
-          echo "org.gradle.java.home=$JAVA_HOME" >> android/gradle.properties
-          echo "android.compileOptions.sourceCompatibility=17" >> android/gradle.properties
-          echo "android.compileOptions.targetCompatibility=17" >> android/gradle.properties
+          if [ ! -f capacitor.config.json ]; then
+            npx cap init DzenanWin com.salen.dzenanwin --web-dir=build
+          fi
+
+      - name: Add Android platform (if missing)
+        run: |
+          if [ ! -d android ]; then
+            npx cap add android
+          fi
+
+      - name: Sync Capacitor
+        run: npx cap sync android
 
       - name: Build Debug APK
         run: |
