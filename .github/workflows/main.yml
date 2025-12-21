@@ -5,20 +5,19 @@ on:
     branches: [ main ]
 
 jobs:
-  android:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
-      - name: Setup Java 17
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -30,28 +29,19 @@ jobs:
       - name: Build web
         run: npm run build
 
-      - name: Create capacitor.config.json
-        run: |
-          cat <<EOF > capacitor.config.json
-          {
-            "appId": "com.dzenan.win",
-            "appName": "DzenanWin",
-            "webDir": "build",
-            "bundledWebRuntime": false
-          }
-          EOF
+      - name: Install Capacitor Android
+        run: npm install @capacitor/android @capacitor/cli
 
-      - name: Install Capacitor
-        run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-
-      - name: Add Android platform
-        run: npx cap add android
-
-      - name: Sync Android
+      - name: Capacitor sync
         run: npx cap sync android
 
-      - name: Build APK
+      - name: FORCE JAVA 17 FOR GRADLE
+        run: |
+          echo "org.gradle.java.home=$JAVA_HOME" >> android/gradle.properties
+          echo "android.compileOptions.sourceCompatibility=17" >> android/gradle.properties
+          echo "android.compileOptions.targetCompatibility=17" >> android/gradle.properties
+
+      - name: Build Debug APK
         run: |
           cd android
           ./gradlew assembleDebug
