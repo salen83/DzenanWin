@@ -1,50 +1,70 @@
-name: Android Build
+name: Capacitor Android Build
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build-android:
     runs-on: ubuntu-24.04
 
+    env:
+      JAVA_HOME: /usr/lib/jvm/java-17-temurin
+      ANDROID_HOME: ${{ runner.temp }}/Android
+      PATH: ${{ runner.temp }}/Android/cmdline-tools/latest/bin:${{ runner.temp }}/Android/platform-tools:${{ env.PATH }}
+
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
 
-    - name: Install Capacitor CLI and Android
-      run: |
-        npm install -g @capacitor/cli@6 @capacitor/android@6
+      - name: Install npm dependencies
+        run: |
+          npm install
+          git add package-lock.json
+          git commit -m "Update package-lock.json for Node 24" || echo "No changes to commit"
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 36
+          build-tools: 36.0.0
+          ndk: 25.2.9519653
+          cmake: 3.26.4
+          accept-licenses: true
 
-    - name: Build web assets
-      run: npm run build
+      - name: Ensure Capacitor is installed
+        run: npm install @capacitor/core @capacitor/cli
 
-    - name: Init Capacitor Android if missing
-      run: |
-        if [ ! -d "android" ]; then
-          npx cap init DzenanWin com.dzenan.win --web-dir=public
-          npx cap add android
-        fi
+      - name: Init Capacitor if needed
+        run: |
+          if [ ! -f "capacitor.config.json" ]; then
+            npx cap init DzenanWin com.dzenan.win --web-dir=public
+          fi
 
-    - name: Sync Capacitor Android
-      run: npx cap sync android
+      - name: Add Android platform if missing
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
 
-    - name: Build Android APK
-      run: |
-        cd android
-        ./gradlew assembleDebug
-      env:
-        JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+      - name: Sync Capacitor Android
+        run: npx cap sync android
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Set Gradle Java version
+        run: |
+          touch android/gradle.properties
+          echo "org.gradle.java.home=$JAVA_HOME" >> android/gradle.properties
+          echo "android.compileOptions.sourceCompatibility=17" >> android/gradle.properties
+          echo "android.compileOptions.targetCompatibility=17" >> android/gradle.properties
+
+      - name: Build Android APK
+        run: |
+          cd android
+          ./gradlew assembleDebug
