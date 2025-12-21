@@ -44,9 +44,11 @@ jobs:
       - name: Accept Android licenses
         run: yes | sdkmanager --licenses
 
+      - name: Ensure gradlew is executable
+        run: chmod +x android/gradlew
+
       - name: Capacitor sync
-        run: |
-          npx cap sync android
+        run: npx cap sync android
 
       - name: Build APK
         working-directory: android
