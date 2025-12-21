@@ -6,37 +6,60 @@ on:
   workflow_dispatch:
 
 jobs:
-  android:
-    runs-on: ubuntu-24.04
+  build-android:
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tar unzip curl
 
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - uses: actions/setup-java@v4
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Install Capacitor
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Build web assets
+        run: npm run build
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - uses: android-actions/setup-android@v3
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Install dependencies
-        run: npm install
+      - name: Accept Android licenses
+        run: yes | sdkmanager --licenses
 
-      - name: Build web
-        run: npm run build
-
-      - name: Capacitor sync
+      - name: Capacitor sync android
         run: npx cap sync android
 
-      - name: Build APK
+      - name: FIX Gradle Java home (REMOVE Termux path)
+        run: |
+          if [ -f android/gradle.properties ]; then
+            sed -i '/org.gradle.java.home/d' android/gradle.properties
+          fi
+
+      - name: Build DEBUG APK
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
